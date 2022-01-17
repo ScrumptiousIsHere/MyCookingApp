@@ -1,4 +1,4 @@
-# MyCookingApp
+# MyCookingApp(Aplicatia se afla in branch-ul 'master')
 
 MyCookingApp este o aplicatie web implementata in framework-ul Laravel.
 
