@@ -1,0 +1,36 @@
+<form class="form-signin " action="submitreteta" method="post">
+            @csrf
+            <h1 class="mb-3">Adauga o reteta</h1>
+            <label for="inputtitlu" class="sr-only">Introduceti titlul</label>
+            <input id="inputtitlu" name="titlu" type="text" class="form-control mb-3" placeholder="Titlul" required="">
+
+
+
+            <label for="inputtip" class="sr-only">Introduceti tipul</label>
+            <input id="inputtip" name="tip" type="text" class="form-control mb-3" placeholder="Tipul"
+                   required="">
+
+
+
+            <label for="ingredient1">Alegeti ingredientul:</label>
+            <select name="ingredient1" class="form-control">
+                <option value=""><--- Alegeti ingredientul ---></option>
+                @foreach($ingredients as $ingredient => $value)
+                    <option value="{{$ingredient}}">{{$value}}</option>
+                @endforeach
+            </select>
+            <label for="cantitatei1">Cantitatea ingredientului 1:</label>
+            <input type="number" id="cantitatei1" name="cantitatei1" class="form-control mb-3" placeholder="Cantitate ingredient 1" required="">
+
+
+
+
+            <label for="ingredient2">Alegeti ingredientul:</label>
+            <select name="ingredient2" class="form-control">
+                <option value=""><--- Alegeti ingredientul ---></option>
+                @foreach($ingredients as $ingredient => $value)
+                    <option value="{{$ingredient}}">{{$value}}</option>
+                @endforeach
+            </select>
+            <label for="cantitatei2">Cantitatea ingredientului 2:</label>
+            <input type="number" id="cantitatei2" name="cantitatei2" class="form-control mb-3" placeholder="Cantitate ingredient 2" required="">

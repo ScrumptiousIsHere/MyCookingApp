@@ -1,0 +1,18 @@
+body{
+    background:rgb(214, 214, 122);
+    color:black;
+    margin:auto;
+    font-family:sans-serif;
+}
+
+p{
+    line-height: 1.7;
+}
+
+article + article{
+
+margin-top: 3rem;
+border-top: 1px solid gray;
+padding-top: 3rem;
+
+}

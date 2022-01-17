@@ -1,0 +1,272 @@
+public function startProgram(){
+
+
+        //cromozomul trebuie sa fie alcatuit din mic dejun, pranz, cina, gustare1 , gustare2
+
+
+        $listacrom=array();
+        $max=0;
+        for($i=0;$i<40;$i++) {
+
+            //creem un cromozom nou
+            $crom = array();
+            //Adaugam la cromozom o reteta de mic dejun aleatoare
+            $micdejun = json_decode(Reteta::latest()->where('tip_masa', '1')->pluck('id'));
+            $lenmd = count($micdejun);
+            array_push($crom, $micdejun[random_int(0, $lenmd - 1)]);
+
+
+            //Adaugam la cromozom o reteta de pranz aleatoare
+            $pranz = json_decode(Reteta::latest()->where('tip_masa', '2')->where('is_active',1)->pluck('id'));
+            $lenp = count($pranz);
+            array_push($crom, $pranz[random_int(0, $lenp - 1)]);
+
+            //Adaugam la cromozom o reteta de cina aleatoare
+            $cina = json_decode(Reteta::latest()->where('tip_masa', '3')->pluck('id'));
+            $lenc = count($cina);
+            array_push($crom, $cina[rand(0, $lenc - 1)]);
+
+            //Adaugam la cromozom doua retete de gustare
+            $gustare = json_decode(Reteta::latest()->where('tip_masa', '4')->pluck('id'));
+            $leng = count($gustare);
+            array_push($crom, $gustare[rand(0, $leng - 1)]);
+            array_push($crom, $gustare[rand(0, $leng - 1)]);
+            $suma=$this->calculCarbo($crom)+$this->calculProt($crom)+$this->calculGrasimi($crom)+$this->calculCalorii($crom);
+            array_push($crom,9+$suma);
+
+            //adaugam cromozomul la lista
+            array_push($listacrom, $crom);
+
+        }
+
+for ($i=0;$i<100;$i++){
+
+	//CALCULEAZA FITNESS
+	for ($i = 0; $i < sizeof($listacrom); $i++) {
+		$suma=$this->calculCarbo($listacrom[$i])+$this->calculProt($listacrom[$i])+$this->calculGrasimi($listacrom[$i])+$this->calculCalorii($listacrom[$i]);
+                $listacrom[$i][5]=$suma;
+	}
+
+        //selectia parintilor
+        $parinti=array();
+
+
+ 	//calculam totalul functiilor fitness
+        $totalfit = $this->calculTotalFitness($listacrom);
+        //calculam pentru fiecare cromozom probabilitatea sa
+        $listacrom = $this->calculProb($listacrom, $totalfit);
+        //calculam probabilitatea cumulativa
+        $listacrom= $this->calculProbCum($listacrom, $cromprob);
+        //gasim primul element care are prob mai mare decat numarul random si o introducem in survivors
+        //initializam lista cromozomilor care supravietuiesc si avanseaza in urmatoarea generatie
+        $result=array();
+
+        for ($i = 0; $i < sizeof($listacrom); $i++) {
+            $rand = rand(0,1000)/1000;
+            $ok=1;
+            for ($j = 0; $j < sizeof($listacrom); $j++)
+                    if ($listacrom[$j][7] >= $rand) {
+                        $ok=0;
+                        array_push($result, $listacrom[$j]);
+                    }
+
+                }
+        }
+
+       $listacrom=$listacrom($result);
+
+
+//crossover
+    $rataCross=75;
+        $nrparinti=array();
+	for ($i = 0; $i < sizeof($listacrom); $i++){
+		$rand=rand(0,100);
+		if ($rand<$rataCross)
+			array_push($parinti, $i);
+	}
+
+	$nrparinti=sizeof($parinti);
+        $i=0;
+        while($i<$nrparinti) {
+            //selectam cate doi parinti
+            $parinte1=$listacrom[$parinti[$i]];
+            $parinte2=$listacrom[$parinti[$i+1]];
+            //creem copiii
+            //luam o gena la intamplare
+            $punct=rand(0,4);
+            //interschimbam
+	    for ($i = 0; $i < 7; $i++){
+		   if($i!=$punct){
+           	 $copil1[$i]= $parinte1[$i];
+			$copil2[$i]= $parinte2[$i];
+			}
+			else{
+	 		$copil1[$i]= $parinte2[$i];
+			$copil2[$i]= $parinte1[$i];
+			}
+		}
+
+
+            //inlocuim parintii cu copii
+            $listacrom[$parinti[$i]]=$copil1;
+            $listacrom[$parinti[$i+1][6]]=$copil2;
+
+            $i=$i+2;
+        }
+
+//mutatie
+        $rata_mutatie=0.05;
+        //avem crossover-ul efectuat,mai trebuie mutatia(random la un element al array-ului)
+            $total_gene=sizeof($listacrom)*5;
+            $num_mutatii=ceil($rata_mutatie*$total_gene);
+
+            while($num_mutatii>0) {
+		$randNo = round(( $total_gen - 1 ) * rand()) + 1 ;
+		$n=ceil($randNo/5); //alegem cromozomul
+                $masa = rand(0, 4);  //alegem gena
+
+                if ($masa == 0) {
+                    $micdejun = json_decode(Reteta::latest()->where('tip_masa', '1')->pluck('id'));
+                    $lenmd = count($micdejun);
+                    $listacrom[n][$masa] = $micdejun[rand(0, $lenmd - 1)];
+                } elseif ($masa == 1) {
+                    $pranz = json_decode(Reteta::latest()->where('tip_masa', '2')->pluck('id'));
+                    $lenmd = count($pranz);
+                    $listacrom[n][$masa]= $pranz[rand(0, $lenmd - 1)];
+                } elseif ($masa == 2) {
+                    $pranz = json_decode(Reteta::latest()->where('tip_masa', '3')->pluck('id'));
+                    $lenmd = count($pranz);
+                    $listacrom[n][$masa]= $pranz[rand(0, $lenmd - 1)];
+                } elseif ($masa == 3) {
+                    $pranz = json_decode(Reteta::latest()->where('tip_masa', '4')->pluck('id'));
+                    $lenmd = count($pranz);
+                    $listacrom[n][$masa] = $pranz[rand(0, $lenmd - 1)];
+                } elseif ($masa == 4) {
+                    $pranz = json_decode(Reteta::latest()->where('tip_masa', '4')->pluck('id'));
+                    $lenmd = count($pranz);
+                    $listacrom[n][$masa] = $pranz[rand(0, $lenmd - 1)];
+                }
+
+                $num_mutatii--;
+            }
+
+
+    }  //end for 100 iteratii
+
+
+
+
+
+   public function calculProb($listacrom,$totalfit){
+        for($i=0;$i<sizeof($listacrom);$i++){
+             $listacrom[$i][6]=$listacrom[$i][5]/$total;
+        }
+        return $listacrom;
+    }
+
+    public function calculProbCum($listacrom,$total){
+        for($i=0;$i<sizeof($listacrom);$i++){
+            for ($j=0;$j<$i;$j++)
+                $listacrom[$i][7]=$listacrom[$i][7]+$listacrom[$j][6];
+        }
+        return $listacrom;
+    }
+
+    public function calculTotalFitness($listacrom){
+        $totalprob=0;
+        for($i=0;$i<sizeof($listacrom);$i++){
+            $totalprob=$totalprob+$listacrom[$i][5];
+        }
+        return $totalprob;
+    }
+
+
+    public function calculFitness($id){
+        $prot=0;
+        $grasimi=0;
+        $calorii=0;
+        $carbo=0;
+        $masa=Reteta::where('id',$id)->first();
+            foreach($masa->continut as $continutReteta){
+                foreach($continutReteta->ingredient->continut as $continutIngredient){
+                    if($continutIngredient->nutrient->nume=="Carbohidrat")
+                        $carbo=$carbo+$continutIngredient->cantitate*($continutReteta->cantitate/100);
+                    elseif($continutIngredient->nutrient->nume=="Proteina")
+                        $prot=$prot+$continutIngredient->cantitate*($continutReteta->cantitate/100);
+                    elseif($continutIngredient->nutrient->nume=="Grasime")
+                        $grasimi=$grasimi+$continutIngredient->cantitate*($continutReteta->cantitate/100);
+                }
+            }
+
+        $nutrienti=array();
+        array_push($nutrienti,$prot);
+        array_push($nutrienti,$grasimi);
+        array_push($nutrienti,$carbo);
+        array_push($nutrienti,$prot+$carbo+$grasimi);
+        return $nutrienti;
+    }
+
+    public function calculCarbo($crom){
+        $carbo=2124;
+        $p=0.1;
+        $total=0;
+        for($i=0;$i<=4;$i++){
+            $rezultat=$this->calculFitness($crom[$i]);
+            $total=$total+$rezultat[2];
+        }
+        if($carbo*0.95<=$total && $total<=$carbo*1.05)
+            return 2;
+        elseif(($carbo*0.9<=$total && $total<$carbo*0.95) || ($carbo*1.05<$total && $total<=$carbo*1.1))
+            return 0;
+        elseif($carbo*0.9>$total || $total>$carbo*1.1)
+            return -2;
+
+    }
+
+    public function calculProt($crom){
+        $prot=442;
+        $total=0;
+        for($i=0;$i<=4;$i++){
+            $rezultat=$this->calculFitness($crom[$i]);
+            $total=$total+$rezultat[0];
+        }
+        if($prot*0.95<=$total && $total<=$prot*1.05)
+            return 2;
+        elseif(($prot*0.9<=$total && $total<$prot*0.95) || ($prot*1.05<$total && $total<=$prot*1.1))
+            return 0;
+        elseif($prot*0.9>$total || $total>$prot*1.1)
+            return -2;
+
+    }
+
+    public function calculGrasimi($crom){
+        $gr=973;
+        $total=0;
+        for($i=0;$i<=4;$i++){
+            $rezultat=$this->calculFitness($crom[$i]);
+            $total=$total+$rezultat[1];
+        }
+        if($gr*0.95<=$total && $total<=$gr*1.05)
+            return 2;
+        elseif(($gr*0.9<=$total && $total<$gr*0.95) || ($gr*1.05<$total && $total<=$gr*1.1))
+            return 0;
+        elseif($gr*0.9>$total || $total>$gr*1.1)
+            return -2;
+
+    }
+
+    public function calculCalorii($crom){
+        $cal=3539;
+        $total=0;
+        for($i=0;$i<=4;$i++){
+            $rezultat=$this->calculFitness($crom[$i]);
+            $total=$total+$rezultat[3];
+        }
+        if($cal*0.95<=$total && $total<=$cal*1.05)
+            return 2;
+        elseif(($cal*0.9<=$total && $total<$cal*0.95) || ($cal*1.05<$total && $total<=$cal*1.1))
+            return 0;
+        elseif($cal*0.9>$total || $total>$cal*1.1)
+            return -2;
+
+    }
